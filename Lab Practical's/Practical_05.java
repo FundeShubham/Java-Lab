@@ -10,7 +10,7 @@
  */
 
 class StaffMember {
-
+    
     protected String name;
     protected String department;
 
