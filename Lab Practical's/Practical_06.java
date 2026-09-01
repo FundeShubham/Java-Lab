@@ -11,216 +11,108 @@ and display per-booking and overall totals.
 */
 
 import java.util.Scanner;
-import java.util.Locale;
 
-abstract class Transport {
-    protected double distance;       
-    protected String type;           
-    protected int numPassengers;     
+// Base class 
+abstract class Transport { 
+    double distance; 
 
-    public Transport(double distance, String type, int numPassengers) {
-        this.distance = distance;
-        this.type = type;
-        this.numPassengers = numPassengers;
-    }
+    Transport(double distance) { 
+        this.distance = distance; 
+    } 
 
-    public abstract double calculateFarePerPassenger();
-  
-    public void showDetails(int index) {
-        double perPassenger = calculateFarePerPassenger();
-        double total = perPassenger * numPassengers;
-        System.out.println("Booking #" + (index + 1) + " -> " + this.getClass().getSimpleName());
-        System.out.printf(Locale.US, "  Type/Class         : %s%n", type);
-        System.out.printf(Locale.US, "  Distance (km)      : %.2f%n", distance);
-        System.out.printf(Locale.US, "  No. of Passengers  : %d%n", numPassengers);
-        System.out.printf(Locale.US, "  Fare per Passenger : %.2f%n", perPassenger);
-        System.out.printf(Locale.US, "  Total Fare         : %.2f%n", total);
-        System.out.println("---------------------------------------------");
-    }
-}
+    abstract double calculateFare(); 
+} 
 
-class Bus extends Transport {
-    // Rates per km
-    private static final double NON_AC_RATE = 5.0;
-    private static final double AC_RATE = 8.0;
+// Bus class 
+class Bus extends Transport { 
+    Bus(double distance) { 
+        super(distance); 
+    } 
 
-    public Bus(double distance, String type, int numPassengers) {
-        super(distance, type, numPassengers);
-    }
+    @Override 
+    double calculateFare() { 
+        return distance * 5; // Rs.5 per km 
+    } 
+} 
 
-    @Override
-    public double calculateFarePerPassenger() {
-        double rate = NON_AC_RATE;
-        if (type.equalsIgnoreCase("AC")) rate = AC_RATE;
-        return distance * rate;
-    }
-}
+// Train class 
+class Train extends Transport { 
+    String travelClass; 
 
-class Train extends Transport {
-    
-    private static final double GENERAL_RATE = 3.0;
-    private static final double SLEEPER_RATE = 5.0;
-    private static final double AC_RATE = 7.0;
+    Train(double distance, String travelClass) { 
+        super(distance); 
+        this.travelClass = travelClass; 
+    } 
 
-    public Train(double distance, String type, int numPassengers) {
-        super(distance, type, numPassengers);
-    }
+    @Override 
+    double calculateFare() { 
+        if (travelClass.equalsIgnoreCase("Sleeper")) 
+            return distance * 3; 
+        else 
+            return distance * 6; 
+    } 
+} 
 
-    @Override
-    public double calculateFarePerPassenger() {
-        String t = type.toLowerCase();
-        if (t.contains("ac")) {
-            return distance * AC_RATE;
-        } else if (t.contains("sleeper")) {
-            return distance * SLEEPER_RATE;
-        } else {
-            return distance * GENERAL_RATE; 
-        }
-    }
-}
+// Flight class 
+class Flight extends Transport { 
+    String travelClass; 
 
-class Flight extends Transport {
-    // Rates per km for flight classes
-    private static final double ECONOMY_RATE = 40.0;
-    private static final double BUSINESS_RATE = 80.0;
-    private static final double FIRST_RATE = 120.0;
+    Flight(double distance, String travelClass) { 
+        super(distance); 
+        this.travelClass = travelClass; 
+    } 
 
-    public Flight(double distance, String type, int numPassengers) {
-        super(distance, type, numPassengers);
-    }
+    @Override 
+    double calculateFare() { 
+        if (travelClass.equalsIgnoreCase("Economy")) 
+            return distance * 10; 
+        else 
+            return distance * 20; 
+    } 
+} 
 
-    @Override
-    public double calculateFarePerPassenger() {
-        String t = type.toLowerCase();
-        if (t.contains("business")) {
-            return distance * BUSINESS_RATE;
-        } else if (t.contains("first") || t.contains("1st")) {
-            return distance * FIRST_RATE;
-        } else {
-            return distance * ECONOMY_RATE; 
-        }
-    }
-}
-
-public class Assignment_06 {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        sc.useLocale(Locale.US);
-
-        System.out.println("=== Transport Booking System (Array of Objects & Hierarchical Inheritance) ===");
-        int n;
-        while (true) {
-            System.out.print("How many bookings would you like to enter? ");
-            if (sc.hasNextInt()) {
-                n = sc.nextInt();
-                sc.nextLine(); 
-                if (n > 0) break;
-            } else {
-                sc.nextLine(); 
-            }
-            System.out.println("Please enter a positive integer for number of bookings.");
-        }
-
-        Transport[] bookings = new Transport[n];
+// Main class 
+public class Assignment_05 { 
+    public static void main(String[] args) { 
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter number of bookings: ");
+        int n = scanner.nextInt();
+        Transport[] bookings = new Transport[n]; 
 
         for (int i = 0; i < n; i++) {
-            System.out.println("\nEnter details for booking #" + (i + 1));
-            int choice;
-            while (true) {
-                System.out.println("Select Transport Type: 1) Bus  2) Train  3) Flight");
-                System.out.print("Choice (1-3): ");
-                if (sc.hasNextInt()) {
-                    choice = sc.nextInt();
-                    sc.nextLine();
-                    if (choice >= 1 && choice <= 3) break;
-                } else {
-                    sc.nextLine();
-                }
-                System.out.println("Invalid choice. Please enter 1, 2 or 3.");
-            }
-
-            double distance;
-            while (true) {
-                System.out.print("Enter distance in kilometers: ");
-                if (sc.hasNextDouble()) {
-                    distance = sc.nextDouble();
-                    sc.nextLine();
-                    if (distance > 0) break;
-                } else {
-                    sc.nextLine();
-                }
-                System.out.println("Please enter a positive number for distance.");
-            }
-
-            String type = "";
-            if (choice == 1) {
-                
-                while (true) {
-                    System.out.print("Enter Bus Type (AC / Non-AC): ");
-                    type = sc.nextLine().trim();
-                    if (type.equalsIgnoreCase("AC") || type.equalsIgnoreCase("Non-AC") || type.equalsIgnoreCase("Non AC") || type.equalsIgnoreCase("NON-AC")) {
-                        break;
-                    }
-                    System.out.println("Invalid bus type. Try 'AC' or 'Non-AC'.");
-                }
-            } else if (choice == 2) {
-                
-                while (true) {
-                    System.out.print("Enter Train Class (General / Sleeper / AC): ");
-                    type = sc.nextLine().trim();
-                    String tl = type.toLowerCase();
-                    if (tl.contains("general") || tl.contains("sleeper") || tl.contains("ac")) {
-                        break;
-                    }
-                    System.out.println("Invalid train class. Try 'General', 'Sleeper', or 'AC'.");
-                }
+            System.out.println("\nBooking " + (i + 1) + ":");
+            System.out.println("1. Bus");
+            System.out.println("2. Train");
+            System.out.println("3. Flight");
+            System.out.print("Select transport type (1-3): ");
+            int type = scanner.nextInt();
+            
+            System.out.print("Enter distance (in km): ");
+            double distance = scanner.nextDouble();
+            scanner.nextLine(); // consume newline
+            
+            if (type == 1) {
+                bookings[i] = new Bus(distance);
+            } else if (type == 2) {
+                System.out.print("Enter travel class (Sleeper/AC): ");
+                String travelClass = scanner.nextLine();
+                bookings[i] = new Train(distance, travelClass);
+            } else if (type == 3) {
+                System.out.print("Enter travel class (Economy/Business): ");
+                String travelClass = scanner.nextLine();
+                bookings[i] = new Flight(distance, travelClass);
             } else {
-                
-                while (true) {
-                    System.out.print("Enter Flight Class (Economy / Business / First or 1st): ");
-                    type = sc.nextLine().trim();
-                    String tl = type.toLowerCase();
-                    if (tl.contains("economy") || tl.contains("business") || tl.contains("first") || tl.contains("1st")) {
-                        break;
-                    }
-                    System.out.println("Invalid flight class. Try 'Economy', 'Business', or 'First'.");
-                }
+                System.out.println("Invalid type. Defaulting to Bus.");
+                bookings[i] = new Bus(distance);
             }
-
-            int passengers;
-            while (true) {
-                System.out.print("Enter number of passengers for this booking: ");
-                if (sc.hasNextInt()) {
-                    passengers = sc.nextInt();
-                    sc.nextLine();
-                    if (passengers > 0) break;
-                } else {
-                    sc.nextLine();
-                }
-                System.out.println("Please enter a positive integer for passengers.");
-            }
-
-            switch (choice) {
-                case 1:
-                    bookings[i] = new Bus(distance, type, passengers);
-                    break;
-                case 2:
-                    bookings[i] = new Train(distance, type, passengers);
-                    break;
-                default:
-                    bookings[i] = new Flight(distance, type, passengers);
-                    break;
-            }
-            System.out.println("Booking recorded.");
         }
 
-        System.out.println("\n\n=== Booking Summary ===");
-        double grandTotal = 0.0;
-        for (int i = 0; i < bookings.length; i++) {
-            bookings[i].showDetails(i);
-            grandTotal += bookings[i].calculateFarePerPassenger() * bookings[i].numPassengers;
-        }
-        System.out.printf(Locale.US, "Grand Total for all bookings: %.2f%n", grandTotal);
-        sc.close();
-    }
+        System.out.println("\n--- Fare Details ---");
+        for (Transport t : bookings) { 
+            System.out.println(t.getClass().getSimpleName() + " Fare: Rs. " + t.calculateFare()); 
+        } 
+        
+        scanner.close();
+    } 
+}
 }
